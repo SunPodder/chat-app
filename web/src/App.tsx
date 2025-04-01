@@ -7,7 +7,6 @@ import {
 	Routes,
 	useLocation,
 } from "react-router-dom";
-import "./App.css";
 import { User } from "./lib/store";
 import { useAtomValue, useSetAtom } from "jotai";
 const Home = React.lazy(() => import("./pages/Home"));

@@ -7,12 +7,10 @@
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@lib": ["src/lib"]
 		}
 	},
 	"suppressImplicitAnyIndexErrors": true,
-	"noImplicitAny": false,
-	"paths": {
-		"@lib": ["src/lib"]
-	}
+	"noImplicitAny": false
 }
