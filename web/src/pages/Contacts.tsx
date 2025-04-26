@@ -10,12 +10,10 @@ import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Input } from "../components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { useSetAtom } from "jotai";
-import { activeConversation } from "../lib/store";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 export default function Contacts() {
-	const setActiveConv = useSetAtom(activeConversation as any);
 	const {
 		data: contacts,
 		error,
@@ -24,13 +22,6 @@ export default function Contacts() {
 		queryKey: ["contacts"],
 		queryFn: () => GET("http://localhost:5000/contacts"),
 	});
-
-	function openChat(contact: any) {
-		const c = {to: ''};
-		c.to = contact;
-
-		setActiveConv(c);
-	}
 
 	if (error) return <div>Error: {error.message}</div>;
 	if (isLoading) return <div>Loading...</div>;
@@ -56,26 +47,27 @@ export default function Contacts() {
 			</CardHeader>
 			<CardContent>
 				{contacts.map((contact: any) => (
-					<Card
-						key={contact.id}
-						className="mb-2 p-4 cursor-pointer"
-						onClick={() => openChat(contact)}
-					>
-						<div className="flex items-center w-full h-full gap-2">
-							<Avatar className="w-9 h-9">
-								<AvatarImage
-									src={contact?.avatar}
-									alt={contact?.name.first}
-								/>
-								<AvatarFallback>
-									{contact?.name.first[0]}
-								</AvatarFallback>
-							</Avatar>
-							<div className="font-semibold">
-								{contact?.name.first} {contact?.name.last}
+					<Link to={`/chat/${contact.id}`} key={contact.id}>
+						<Card
+							key={contact.id}
+							className="mb-2 p-4 cursor-pointer"
+						>
+							<div className="flex items-center w-full h-full gap-2">
+								<Avatar className="w-9 h-9">
+									<AvatarImage
+										src={contact?.avatar}
+										alt={contact?.name.first}
+									/>
+									<AvatarFallback>
+										{contact?.name.first[0]}
+									</AvatarFallback>
+								</Avatar>
+								<div className="font-semibold">
+									{contact?.name.first} {contact?.name.last}
+								</div>
 							</div>
-						</div>
-					</Card>
+						</Card>
+					</Link>
 				))}
 			</CardContent>
 		</Card>

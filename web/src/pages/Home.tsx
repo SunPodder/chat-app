@@ -10,11 +10,12 @@ import {
 import { Input } from "../components/ui/input";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { activeConversation, User } from "../lib/store";
-import { useAtomValue, useSetAtom } from "jotai";
+import { User } from "../lib/store";
+import { useAtomValue } from "jotai";
 import { GET } from "../lib/fetch";
 import { socket } from "../lib/socket";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 const formatDate = (dateStr: Date) => {
 	const date = new Date(dateStr);
@@ -38,14 +39,13 @@ const formatDate = (dateStr: Date) => {
 };
 
 export default function Home() {
-	const setActiveConv = useSetAtom(activeConversation);
 	const user = useAtomValue(User);
 	const queryClient = useQueryClient();
 	const {
 		data: chats,
 		error,
 		isLoading,
-	} = useQuery({
+	} = useQuery<Chat[]>({
 		queryKey: ["chats"],
 		queryFn: () => GET("http://localhost:5000/conversations/"),
 	});
@@ -120,7 +120,7 @@ export default function Home() {
 
 		// return all chats
 		// but put those on top that match the query
-		queryClient.setQueryData(["chats"], (data: any) => {
+		queryClient.setQueryData(["chats"], (data: Chat[]) => {
 			return [...data].sort((a: any, b: any) => {
 				const aName =
 					`${a.to.name.first} ${a.to.name.last}`.toLowerCase();
@@ -136,11 +136,6 @@ export default function Home() {
 				}
 			});
 		});
-		console.log(s);
-	}
-
-	function openChat(conv) {
-		setActiveConv({ ...conv });
 	}
 
 	if (error) return <div>Error: {error.message}</div>;
@@ -162,40 +157,44 @@ export default function Home() {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<ul type="none">
-					{chats.map((chat: any, i) => (
-						<li
-							key={i}
-							className="mb-2 p-4 cursor-pointer border-t border-b border-gray-200 grid gap-1"
-							onClick={() => openChat(chat)}
-						>
-							<div className="flex items-center w-full h-full gap-2">
-								<Avatar className="w-8 h-8">
-									<AvatarImage
-										src={chat.to.avatar}
-										alt={chat.to.name.first}
-									/>
-									<AvatarFallback>
-										{chat.to.name.first[0]}
-									</AvatarFallback>
-								</Avatar>
-								<div className="font-semibold">
-									{chat.to.name.first} {chat.to.name.last}
+				<div type="none">
+					{chats.map((chat, i) => {
+						return (
+							<Link
+								key={i}
+								className="mb-2 p-4 cursor-pointer border-t border-b border-gray-200 grid gap-1"
+								to={`/chat/${chat.to.id}`}
+							>
+								<div className="flex items-center w-full h-full gap-2">
+									<Avatar className="w-8 h-8">
+										<AvatarImage
+											src={chat.to.avatar}
+											alt={chat.to.name.first}
+										/>
+										<AvatarFallback>
+											{chat.to.name.first[0]}
+										</AvatarFallback>
+									</Avatar>
+									<div className="font-semibold">
+										{chat.to.name.first} {chat.to.name.last}
+									</div>
 								</div>
-							</div>
-							<div>
-								<small className="ml-3 flex">
-									<span className="flex-1">
-										{chat.last_message.from === user?.id &&
-											"You: "}
-										{chat.last_message.text}
-									</span>
-									{formatDate(chat.last_message.created_at)}
-								</small>
-							</div>
-						</li>
-					))}
-				</ul>
+								<div>
+									<small className="ml-3 flex">
+										<span className="flex-1">
+											{chat.last_message.from ===
+												user?.id && "You: "}
+											{chat.last_message.text}
+										</span>
+										{formatDate(
+											chat.last_message.created_at
+										)}
+									</small>
+								</div>
+							</Link>
+						);
+					})}
+				</div>
 			</CardContent>
 		</Card>
 	);

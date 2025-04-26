@@ -1,18 +1,31 @@
 import type e from "express";
 import { Messages } from "../schema";
-import { eq, or } from "drizzle-orm";
+import { and, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
 
 export async function get(req: e.Request, res: e.Response) {
-	console.log(req.params.id);
+	const currentUserId = req.user.id;
+	const buddyId = req.params["buddy_id"]
+	const offset = parseInt(req.query["offset"] as string) || 0;
+	const limit = parseInt(req.query["limit"] as string) || 20;
 	
 	const messages = await db
 		.select()
 		.from(Messages)
 		.where(
-			or(eq(Messages.from, req.params.id), eq(Messages.to, req.params.id))
+			and(
+				// One participant must be the current user
+				or(
+					eq(Messages.from, currentUserId),
+					eq(Messages.to, currentUserId)
+				),
+				// Other participant must be the requested user
+				or(eq(Messages.from, buddyId), eq(Messages.to, buddyId))
+			)
 		)
-		.limit(20);
+		.orderBy(desc(Messages.created_at))
+		.offset(offset)
+		.limit(limit);
 
 	res.status(200).send(messages);
 }

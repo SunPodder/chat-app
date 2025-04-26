@@ -85,7 +85,7 @@ export default function Profile() {
 				first: user?.name.first,
 				last: user?.name.last,
 			},
-			avatar: "",
+			avatar: user?.avatar || "",
 		},
 	});
 
@@ -106,6 +106,15 @@ export default function Profile() {
 		if (response.ok) {
 			const data = await response.json();
 			setUser(data);
+			form.reset({
+				email: data.email,
+				username: data.username,
+				name: {
+					first: data.name.first,
+					last: data.name.last,
+				},
+				avatar: data.avatar || "",
+			});
 		}
 	}
 

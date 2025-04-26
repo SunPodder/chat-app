@@ -1,13 +1,12 @@
+import type e from "express";
 import { redis } from "../db";
-import type { UserRequest } from "./types";
-import type { Request } from "express";
 
-export default async function (req: UserRequest, res: Request) {
+export default async function (req: e.Request, res: e.Response) {
 	try {
-		await redis.del(req.cookies.session);
+		await redis.del(req.cookies["session"]);
 		res.clearCookie("session");
 		res.status(200).send("Logged out");
-	} catch (error: any) {
+	} catch (error) {
 		res.status(400).send(error.errors);
 	}
 }

@@ -1,7 +1,5 @@
-import type { Request } from "express";
-
 export interface User {
-	id: number;
+	id: string;
 	username: string;
 	email: string;
 	name: {
@@ -9,9 +7,5 @@ export interface User {
 		last: string;
 	};
 	password: string;
-	created_at: string;
-}
-
-export interface UserRequest extends Request {
-	user: User;
+	created_at: Date;
 }

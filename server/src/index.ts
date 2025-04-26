@@ -10,7 +10,7 @@ import morgan from "morgan";
 import cookie from "cookie";
 import { db, redis } from "./db";
 import { Messages, Users } from "./schema";
-import { arrayContains, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const app = express();
 const server = http.createServer(app);
@@ -37,7 +37,7 @@ const io = new Server(server, {
 io.on("connection", async (socket) => {
 	const session = cookie.parse(
 		socket.request.headers.cookie as string
-	).session;
+	)["session"];
 	if (!session) {
 		socket.disconnect();
 		return;

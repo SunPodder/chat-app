@@ -22,7 +22,7 @@ export default async function (req: e.Request, res: e.Response) {
 			secure: true,
 		});
 		res.status(200).send(user);
-	} catch (err: any) {
+	} catch (err) {
 		console.log(err);
 
 		res.status(401).send(err);

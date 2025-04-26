@@ -38,7 +38,7 @@ export default async function (req: e.Request, res: e.Response) {
 			secure: true,
 		});
 		res.status(200).send(user[0]);
-	} catch (error: any) {
+	} catch (error) {
 		res.status(401).send(error.errors);
 	}
 }

@@ -1,4 +1,4 @@
-import { Image, LocateIcon, Send } from "lucide-react";
+import { Image, Send } from "lucide-react";
 import { Input } from "../../components/ui/input";
 
 export function ChatInput({
@@ -11,14 +11,12 @@ export function ChatInput({
 	value: string;
 }) {
 	return (
-		<>
-			<div></div>
+		<div className="w-full p-4 py-8">
 			<form
 				className="flex justify-center items-center w-full gap-2"
 				onSubmit={(e) => onSubmit(e)}
 			>
 				<Image className="w-8 h-8" />
-				<LocateIcon className="w-8 h-8" />
 				<Input
 					value={value}
 					type="text"
@@ -30,6 +28,6 @@ export function ChatInput({
 					<Send className="w-8 h-8" />
 				</button>
 			</form>
-		</>
+		</div>
 	);
 }

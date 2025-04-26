@@ -100,7 +100,12 @@ function App() {
 						<div className="w-full min-h-full">
 							<Routes>
 								<Route element={<RequireAuth />}>
-									<Route path="/" element={<Home />} />
+									<Route
+										path="/"
+										element={<Navigate to="/chat" />}
+									/>
+									<Route path="/chat" element={<Home />} />
+									<Route path="/chat/:chatId" element={<Home />} />
 									<Route path="/me" element={<Profile />} />
 									<Route
 										path="/contacts"
