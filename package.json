@@ -2,6 +2,7 @@
   "name": "rchat",
   "workspaces": [
     "web",
-    "server"
+    "server",
+    "shared"
   ]
 }
