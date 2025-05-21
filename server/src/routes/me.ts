@@ -1,14 +1,25 @@
 import type e from "express";
 import { zProfile } from "../../../common/zod_schema";
 import { db } from "../db";
-import { Users } from "../schema";
-import { eq } from "drizzle-orm";
+import { Media, Users } from "../schema";
+import { eq, getTableColumns } from "drizzle-orm";
 
 export async function get(req: e.Request, res: e.Response) {
-	const user = req.user;
-	delete (user as { password?: string }).password;
+	const user = req["user"];
+	const media = await db
+		.select()
+		.from(Media)
+		.where(eq(Media.user_id, user.id))
+		.then((res) => res[0] as Media);
 
-	res.status(200).send(user);
+	if (!media) {
+		res.status(404).send({ error: "Media not found" });
+		return;
+	}
+
+	const userData: ClientUser = { ...user, avatar: media };
+
+	res.status(200).send(userData);
 }
 
 export async function edit(req: e.Request, res: e.Response) {
@@ -19,17 +30,36 @@ export async function edit(req: e.Request, res: e.Response) {
 			name: req.body.name,
 			username: req.body.username,
 			email: req.body.email,
-		}
+		};
 
-		if (req.file) {
-			if (!req.file.mimetype.startsWith("image")) {
+		if (req["file"]) {
+			if (!req["file"].mimetype.startsWith("image")) {
 				throw new Error("Invalid file type");
 			}
-			val["avatar"] = 'http://localhost:5000/uploads/' + req.file.filename;
+
+			const media = await db
+				.insert(Media)
+				.values({
+					user_id: req["user"].id,
+					type: req["file"].mimetype,
+					url:
+						"http://localhost:5000/uploads/" + req["file"].filename,
+				})
+				.returning()
+				.then((res) => res[0] as Media);
+
+			val["avatar"] = media.id;
 		}
 
-		const user = (await db.update(Users).set(val).where(eq(Users.id, req.user.id)).returning())[0];
-		delete (user as { password?: string }).password;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { password, ...fields } = getTableColumns(Users);
+		const user = (
+			await db
+				.update(Users)
+				.set(val)
+				.where(eq(Users.id, req["user"].id))
+				.returning({...fields})
+		)[0] as ServerUser;
 		res.status(200).send(user);
 	} catch (error) {
 		res.status(400).send(error.errors);
