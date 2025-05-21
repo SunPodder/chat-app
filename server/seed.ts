@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 async function seed() {
 
 	// Create sample users
-	const alice: User = await db
+	const alice = await db
 		.insert(Users)
 		.values({
 			name: { first: "Alice", last: "Johnson" },
@@ -15,9 +15,9 @@ async function seed() {
 			password: "password123", // In production, this should be hashed
 		})
 		.returning()
-		.then((res) => res[0] as User);
+		.then((res) => res[0] as ServerUser);
 
-	const bob: User = await db
+	const bob = await db
 		.insert(Users)
 		.values({
 			name: { first: "Bob", last: "Smith" },
@@ -26,7 +26,7 @@ async function seed() {
 			password: "password123",
 		})
 		.returning()
-		.then((res) => res[0] as User);
+		.then((res) => res[0] as ServerUser);
 
 	await db
 		.insert(Users)
@@ -37,7 +37,7 @@ async function seed() {
 			password: "password123",
 		})
 		.returning()
-		.then((res) => res[0] as User);
+		.then((res) => res[0] as ServerUser);
 
 	const media1 = await db
 		.insert(Media)
@@ -89,16 +89,16 @@ async function seed() {
 		.set({ avatar: media1.id })
 		.where(eq(Users.id, alice.id))
 		.returning()
-		.then((res) => res[0] as User);
+		.then((res) => res[0] as ServerUser);
 
 	await db
 		.update(Users)
 		.set({ avatar: media2.id })
 		.where(eq(Users.id, bob.id))
 		.returning()
-		.then((res) => res[0] as User);
+		.then((res) => res[0] as ServerUser);
 
-	const msgs: Message[] = Array.from({ length: 50 }, (_, i) => ({
+	const msgs: ServerMessage[] = Array.from({ length: 50 }, (_, i) => ({
     id: randomUUID(),
 		from: i % 2 === 0 ? alice.id : bob.id,
 		to: i % 2 === 0 ? bob.id : alice.id,
@@ -106,7 +106,7 @@ async function seed() {
 		created_at: new Date(Date.now() + i * 1000 * 60),
 	}));
 
-	msgs[0].media = [media3.id, media4.id];
+	msgs[49].media = [media3.id, media4.id];
 
 	// Create some sample messages
 	await db.insert(Messages).values(msgs);

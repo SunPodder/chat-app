@@ -6,6 +6,8 @@ interface BaseUser {
 		last: string;
 	};
 	readonly created_at: Date;
+    readonly updated_at: Date;
+    last_online: Date;
 }
 
 interface BaseMessage {
