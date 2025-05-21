@@ -1,15 +1,16 @@
 import type e from "express";
-import { Messages } from "../schema";
+import { Media, Messages } from "../schema";
 import { and, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
 
+
 export async function get(req: e.Request, res: e.Response) {
-	const currentUserId = req.user.id;
-	const buddyId = req.params["buddy_id"]
+	const currentUserId = req["user"].id;
+	const buddyId = req.params["buddy_id"];
 	const offset = parseInt(req.query["offset"] as string) || 0;
 	const limit = parseInt(req.query["limit"] as string) || 20;
-	
-	const messages = await db
+
+	const res1 = (await db
 		.select()
 		.from(Messages)
 		.where(
@@ -25,7 +26,26 @@ export async function get(req: e.Request, res: e.Response) {
 		)
 		.orderBy(desc(Messages.created_at))
 		.offset(offset)
-		.limit(limit);
+		.limit(limit));
+
+	const messages = await Promise.all(
+		res1.map(async (message) => {
+			// fetch media if any
+			if (message.media) {
+				const mediaPromises = message.media.map(async (mediaId) =>
+					(await db
+						.select()
+						.from(Media)
+						.where(eq(Media.id, mediaId))
+						.limit(1))[0]
+				);
+				
+				// @ts-ignore
+				message.media = await Promise.all(mediaPromises);
+			}
+			return message;
+		})
+	);
 
 	res.status(200).send(messages);
 }

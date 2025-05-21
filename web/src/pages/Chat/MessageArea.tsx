@@ -119,6 +119,8 @@ function Messages() {
 		);
 	}
 
+	console.log(messages)
+
 	return (
 		<div className="flex flex-col-reverse w-full">
 			{/* Messages list */}
@@ -143,9 +145,22 @@ function Messages() {
 											msg.from === user?.id
 												? "bg-primary text-white rounded-l-md"
 												: "bg-secondary rounded-r-md"
-										} py-2 px-3 cursor-pointer`}
+										} py-2 px-3 cursor-pointer flex flex-col gap-2`}
 									>
 										{msg.text}
+										{msg.media && msg.media.length > 0 && (
+											<div className="flex flex-wrap gap-2">
+												{msg.media.map((media) => (
+													<img
+														key={media.id}
+														src={`${media.url}`}
+														alt="Message attachment"
+														className="max-w-[200px] rounded-md"
+														loading="lazy"
+													/>
+												))}
+											</div>
+										)}
 									</div>
 								</TooltipTrigger>
 								<TooltipContent side="right">
