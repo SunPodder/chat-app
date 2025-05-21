@@ -1,3 +1,4 @@
+import { getTableColumns } from "drizzle-orm";
 import { zRegisterUser } from "../../../common/zod_schema";
 import { db, redis } from "../db";
 import { Sessions, Users } from "../schema";
@@ -7,14 +8,27 @@ export default async function (req: e.Request, res: e.Response) {
 	try {
 		zRegisterUser.parse(req.body);
 
-		const user = (await db.insert(Users).values(req.body).returning())[0];
-		const session = (
-			await db.insert(Sessions).values({ user_id: user.id }).returning()
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { password, ...fields } = getTableColumns(Users);
+		const user: ServerUser = (
+			await db
+				.insert(Users)
+				.values(req.body)
+				.returning({ ...fields })
+		)[0];
+		const session: string = (
+			await db
+				.insert(Sessions)
+				.values({
+					user_id: user.id,
+					expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24),
+					ip: req.ip,
+					user_agent: req.headers["user-agent"],
+				})
+				.returning()
 		)[0].id;
 
 		await redis.set(`session:${session}`, user.id);
-
-		delete (user as { password?: string }).password;
 
 		res.cookie("session", session, {
 			httpOnly: true,
