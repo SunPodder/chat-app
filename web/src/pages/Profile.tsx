@@ -96,7 +96,7 @@ export default function Profile() {
 		formData.append("username", form.getValues("username"));
 		formData.append("email", form.getValues("email"));
 
-		const response = await fetch("http://localhost:5000/profile/edit", {
+		const response = await fetch("/profile/edit", {
 			method: "POST",
 			body: formData,
 			credentials: "include",

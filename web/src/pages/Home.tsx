@@ -47,7 +47,7 @@ export default function Home() {
 		isLoading,
 	} = useQuery<Chat[]>({
 		queryKey: ["chats"],
-		queryFn: () => GET("http://localhost:5000/conversations/"),
+		queryFn: () => GET("/conversations/"),
 	});
 
 	useEffect(() => {

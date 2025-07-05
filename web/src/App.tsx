@@ -75,7 +75,7 @@ function App() {
 	const setUser: any = useSetAtom(User as any);
 	const { data: user, error } = useQuery({
 		queryKey: ["me"],
-		queryFn: () => GET("http://localhost:5000/me"),
+		queryFn: () => GET("/me"),
 	});
 	useEffect(() => {
 		if (user) {

@@ -75,7 +75,7 @@ function Messages({ chatId }: { chatId: string | null }) {
 			queryFn: async ({ pageParam = 0 }) => {
 				if (!chatId) return { messages: [], nextCursor: undefined };
 				const messages = await GET(
-					`http://localhost:5000/messages/${chatId}?offset=${pageParam}&limit=20`
+					`/messages/${chatId}?offset=${pageParam}&limit=20`
 				);
 
 				return {

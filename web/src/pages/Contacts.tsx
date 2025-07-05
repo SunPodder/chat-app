@@ -20,7 +20,7 @@ export default function Contacts() {
 		isLoading,
 	} = useQuery<User[]>({
 		queryKey: ["contacts"],
-		queryFn: () => GET("http://localhost:5000/contacts"),
+		queryFn: () => GET("/contacts"),
 	});
 
 	if (error) return <div>Error: {error.message}</div>;

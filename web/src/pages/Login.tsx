@@ -37,7 +37,7 @@ export default function Login() {
 	const setUser: any = useSetAtom(User as any);
 
 	async function onSubmit(data: z.infer<typeof zLoginUser>) {
-		const user = await POST("http://localhost:5000/login", data);
+		const user = await POST("/login", data);
 		setUser(user);
 	}
 

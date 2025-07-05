@@ -43,7 +43,7 @@ export default function Register() {
 	const setUser: any = useSetAtom(User as any);
 
 	async function onSubmit(data: z.infer<typeof zRegisterUser>) {
-		const user = await POST("http://localhost:5000/register", data);
+		const user = await POST("/register", data);
 		setUser(user);
 		console.log(user);
 	}

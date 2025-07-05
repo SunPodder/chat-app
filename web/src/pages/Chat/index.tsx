@@ -17,7 +17,7 @@ export default function Chat({ className }: { className?: string }) {
 		queryKey: ["chat", chatId],
 		queryFn: async () => {
 			if (!chatId) return null;
-			return await GET(`http://localhost:5000/conversations/${chatId}`);
+			return await GET(`/conversations/${chatId}`);
 		},
 	});
 
