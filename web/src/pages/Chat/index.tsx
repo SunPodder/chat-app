@@ -10,9 +10,9 @@ import { useParams } from "react-router-dom";
 import { GET } from "../../lib/fetch";
 
 export default function Chat({ className }: { className?: string }) {
-	const [message, setMessage] = useState("");
 	const queryClient = useQueryClient();
-	const { chatId } = useParams();
+	const { chatId: currentChatId } = useParams();
+	const [chatId, setChatId] = useState<string | null>(currentChatId);
 	const { data: chat, isLoading: isLoadingChat } = useQuery<Chat>({
 		queryKey: ["chat", chatId],
 		queryFn: async () => {
@@ -20,6 +20,12 @@ export default function Chat({ className }: { className?: string }) {
 			return await GET(`http://localhost:5000/conversations/${chatId}`);
 		},
 	});
+
+	useEffect(() => {
+		if (currentChatId) {
+			setChatId(currentChatId);
+		}
+	}, [currentChatId]);
 
 	useEffect(() => {
 		socket.on("connect", () => {
@@ -63,24 +69,6 @@ export default function Chat({ className }: { className?: string }) {
 		});
 	}, [queryClient, chatId]);
 
-	async function sendMsg(e: React.FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-		if (!message) return;
-
-		if (socket?.connected) {
-			socket.emit(
-				"send_message",
-				{
-					to: chatId,
-					message,
-				},
-				chat.last_message === null
-			);
-
-			setMessage("");
-		}
-	}
-
 	if (isLoadingChat) {
 		return (
 			<Card className={`flex justify-center items-center ${className}`}>
@@ -94,7 +82,7 @@ export default function Chat({ className }: { className?: string }) {
 
 	if (!chatId) {
 		return (
-			<Card className={`flex justify-center items-center ${className}`}>
+			<Card className={`h-100vh flex justify-center items-center ${className}`}>
 				<CardTitle className="text-2xl text-center opacity-40 flex items-center gap-1">
 					<MessageCircleMore className="w-12 h-12" />
 					Select a conversation to start chatting
@@ -108,12 +96,8 @@ export default function Chat({ className }: { className?: string }) {
 			<CardHeader className="p-0">
 				<ChatHead chat={chat} />
 			</CardHeader>
-			<MessageArea />
-			<ChatInput
-				value={message}
-				onChange={setMessage}
-				onSubmit={sendMsg}
-			/>
+			<MessageArea chatId={chatId} />
+			<ChatInput chat={chat} chatId={chatId} />
 		</Card>
 	);
 }

@@ -40,7 +40,7 @@ const ProfileImage = ({ user, form }) => {
 						<FormLabel>
 							<Avatar className="flex relative cursor-pointer">
 								<AvatarImage
-									src={makeObjectURL(value) || user?.avatar}
+									src={makeObjectURL(value) || user?.avatar?.url}
 									alt={user?.name.first}
 									className="w-40 h-40 rounded-full"
 								/>
@@ -85,7 +85,7 @@ export default function Profile() {
 				first: user?.name.first,
 				last: user?.name.last,
 			},
-			avatar: user?.avatar || "",
+			avatar: user?.avatar?.url || "",
 		},
 	});
 
@@ -113,7 +113,7 @@ export default function Profile() {
 					first: data.name.first,
 					last: data.name.last,
 				},
-				avatar: data.avatar || "",
+				avatar: data.avatar?.url || "",
 			});
 		}
 	}

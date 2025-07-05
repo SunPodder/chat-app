@@ -17,7 +17,7 @@ export default function Sidebar() {
 	useEffect(() => {}, [user]);
 
 	return (
-		<nav className="flex flex-col items-center gap-8 sm:py-5 h-full flex-grow p-4 px-8">
+		<nav className="flex flex-row md:flex-col items-center gap-4 md:gap-8 justify-center md:justify-start py-2 md:py-5 h-full flex-grow p-4 md:px-8 px-4">
 			<TooltipProvider delayDuration={100}>
 				<Tooltip>
 					<TooltipTrigger asChild>
@@ -27,7 +27,7 @@ export default function Sidebar() {
 						>
 							<Avatar className="rounded-full">
 								<AvatarImage
-									src={user?.avatar}
+									src={user?.avatar?.url}
 									alt={user?.name.first}
 									className="rounded-full"
 								/>
@@ -37,7 +37,8 @@ export default function Sidebar() {
 							</Avatar>
 						</Link>
 					</TooltipTrigger>
-					<TooltipContent side="right">Profile</TooltipContent>
+					<TooltipContent side="right" className="md:block hidden">Profile</TooltipContent>
+					<TooltipContent side="top" className="md:hidden block">Profile</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
 			<TooltipProvider delayDuration={100}>
@@ -50,7 +51,8 @@ export default function Sidebar() {
 							<HomeIcon />
 						</Link>
 					</TooltipTrigger>
-					<TooltipContent side="right">Chats</TooltipContent>
+					<TooltipContent side="right" className="md:block hidden">Chats</TooltipContent>
+					<TooltipContent side="top" className="md:hidden block">Chats</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
 			<TooltipProvider delayDuration={100}>
@@ -63,7 +65,8 @@ export default function Sidebar() {
 							<ContactRound />
 						</Link>
 					</TooltipTrigger>
-					<TooltipContent side="right">Contacts</TooltipContent>
+					<TooltipContent side="right" className="md:block hidden">Contacts</TooltipContent>
+					<TooltipContent side="top" className="md:hidden block">Contacts</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
 			<TooltipProvider delayDuration={100}>
@@ -76,7 +79,8 @@ export default function Sidebar() {
 							<Settings2 />
 						</Link>
 					</TooltipTrigger>
-					<TooltipContent side="right">Settings</TooltipContent>
+					<TooltipContent side="right" className="md:block hidden">Settings</TooltipContent>
+					<TooltipContent side="top" className="md:hidden block">Settings</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
 		</nav>

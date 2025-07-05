@@ -6,6 +6,7 @@ import {
 	Route,
 	Routes,
 	useLocation,
+	useParams,
 } from "react-router-dom";
 import { User } from "./lib/store";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -23,8 +24,9 @@ const Topbar = React.lazy(() => import("./components/Topbar"));
 const Sidebar = React.lazy(() => import("./components/Sidebar"));
 
 function RequireAuth() {
-	const user = useAtomValue(User);
+	const user: User = useAtomValue(User);
 	const location = useLocation();
+	const { chatId } = useParams<{ chatId: string }>();
 
 	if (!user) {
 		return <Navigate to="/login" state={{ from: location }} />;
@@ -32,10 +34,10 @@ function RequireAuth() {
 
 	return (
 		<div className="w-full h-full flex gap-2">
-			<div className="w-[30%]">
+			<div className={`md:w-[30%] ${chatId ? "hidden md:block" : "w-full"}`}>
 				<Outlet />
 			</div>
-			<Chat className="flex-1 mr-2" />
+			<Chat className={`flex-1 mr-2 ${!chatId ? "hidden md:block" : ""}`} />
 		</div>
 	);
 }
@@ -55,9 +57,16 @@ function Navbar() {
 	return (
 		location.pathname !== "/login" &&
 		location.pathname !== "/register" && (
-			<aside className="hidden w-20 flex-col border-r border-b bg-background sm:flex rounded-lg">
-				<Sidebar />
-			</aside>
+			<>
+				{/* Desktop sidebar - left side */}
+				<aside className="hidden md:flex w-20 flex-col border-r border-b bg-background rounded-lg">
+					<Sidebar />
+				</aside>
+				{/* Mobile navbar - bottom */}
+				<nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t">
+					<Sidebar />
+				</nav>
+			</>
 		)
 	);
 }
@@ -95,7 +104,7 @@ function App() {
 			<div className="min-h-screen w-full bg-muted/40 flex flex-col gap-2">
 				<BrowserRouter>
 					<Topbar />
-					<div className="w-full flex gap-2 flex-1 pb-4">
+					<div className="w-full flex gap-2 flex-1 pb-20 md:pb-4">
 						<Navbar />
 						<div className="w-full min-h-full">
 							<Routes>

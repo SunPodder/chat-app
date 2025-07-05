@@ -1,7 +1,7 @@
 import { db, redis } from "./db";
 import type e from "express";
 import { Sessions, Users } from "./schema";
-import { eq, getTableColumns } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 /**
  * Verifies the session of the user
@@ -52,13 +52,24 @@ export async function VerifySession(
 			console.log(e.message);
 		}
 	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { password, ...fields } = getTableColumns(Users);
+	
 	// get the user from the database
-	req["user"] = (
-		await db.select({...fields}).from(Users).where(eq(Users.id, user_id))
-	)[0] as ServerUser;
+	req.user = (
+		await db.query.Users.findFirst({
+			where: eq(Users.id, user_id),
+			with: {
+				avatar: true,
+			},
+			columns: {
+				password: false
+			},
+		})
+	) as User;
+
+	if (!req.user) {
+		res.status(401).send("Unauthorized");
+		return;
+	}
 
 	next();
 }

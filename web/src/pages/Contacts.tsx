@@ -18,7 +18,7 @@ export default function Contacts() {
 		data: contacts,
 		error,
 		isLoading,
-	} = useQuery({
+	} = useQuery<User[]>({
 		queryKey: ["contacts"],
 		queryFn: () => GET("http://localhost:5000/contacts"),
 	});
@@ -46,7 +46,7 @@ export default function Contacts() {
 				</form>
 			</CardHeader>
 			<CardContent>
-				{contacts.map((contact: any) => (
+				{contacts.map((contact) => (
 					<Link to={`/chat/${contact.id}`} key={contact.id}>
 						<Card
 							key={contact.id}
@@ -55,7 +55,7 @@ export default function Contacts() {
 							<div className="flex items-center w-full h-full gap-2">
 								<Avatar className="w-9 h-9">
 									<AvatarImage
-										src={contact?.avatar}
+										src={contact?.avatar?.url}
 										alt={contact?.name.first}
 									/>
 									<AvatarFallback>

@@ -1,5 +1,5 @@
 import type e from "express";
-import { Media, Messages } from "../schema";
+import { Messages } from "../schema";
 import { and, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
 
@@ -10,42 +10,24 @@ export async function get(req: e.Request, res: e.Response) {
 	const offset = parseInt(req.query["offset"] as string) || 0;
 	const limit = parseInt(req.query["limit"] as string) || 20;
 
-	const res1 = (await db
-		.select()
-		.from(Messages)
-		.where(
-			and(
-				// One participant must be the current user
-				or(
-					eq(Messages.from, currentUserId),
-					eq(Messages.to, currentUserId)
-				),
-				// Other participant must be the requested user
-				or(eq(Messages.from, buddyId), eq(Messages.to, buddyId))
+	const messages = await db.query.Messages.findMany({
+		orderBy: desc(Messages.created_at),
+		where: and(
+			or(
+				eq(Messages.from, currentUserId),
+				eq(Messages.to, currentUserId)
+			),
+			or(
+				eq(Messages.from, buddyId),
+				eq(Messages.to, buddyId)
 			)
-		)
-		.orderBy(desc(Messages.created_at))
-		.offset(offset)
-		.limit(limit));
-
-	const messages = await Promise.all(
-		res1.map(async (message) => {
-			// fetch media if any
-			if (message.media) {
-				const mediaPromises = message.media.map(async (mediaId) =>
-					(await db
-						.select()
-						.from(Media)
-						.where(eq(Media.id, mediaId))
-						.limit(1))[0]
-				);
-				
-				// @ts-ignore
-				message.media = await Promise.all(mediaPromises);
-			}
-			return message;
-		})
-	);
-
-	res.status(200).send(messages);
+		),
+		limit: limit,
+		offset: offset,
+		with: {
+			media: true
+		}
+	});
+	
+	return res.status(200).send(messages);
 }

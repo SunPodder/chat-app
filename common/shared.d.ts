@@ -1,5 +1,6 @@
-interface BaseUser {
+interface User {
 	readonly id: string;
+	email?: string;
 	username: string;
 	name: {
 		first: string;
@@ -8,13 +9,15 @@ interface BaseUser {
 	readonly created_at: Date;
     readonly updated_at: Date;
     last_online: Date;
+	avatar?: Media;
 }
 
-interface BaseMessage {
+interface Message {
 	readonly id: string;
 	text: string;
 	from: string;
 	to: string;
+	media?: Media[];
 	readonly created_at: Date;
 }
 
@@ -23,19 +26,12 @@ interface Media {
 	type: string;
 	url: string;
 	user_id: string;
+	thumbnail?: string;
+	message_id?: string;
 	readonly created_at: Date;
 }
 
-interface ServerUser extends BaseUser {
-	email: string;
-    avatar?: string;
-}
-
-interface ServerMessage extends BaseMessage {
-	media?: string[];
-}
-
-interface ServerSession {
+interface Session {
 	id: string;
 	user_id: string;
 	created_at: Date;
@@ -44,16 +40,7 @@ interface ServerSession {
     user_agent: string;
 }
 
-interface ClientUser extends BaseUser {
-	email?: string;
-	avatar?: Media;
-}
-
-interface ClientMessage extends BaseMessage {
-	media?: Media[];
-}
-
-interface ClientChat {
-	to: ClientUser;
-	last_message: ServerMessage;
+interface Chat {
+	to: User;
+	last_message: Message;
 }

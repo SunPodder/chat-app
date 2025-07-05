@@ -10,7 +10,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { GET } from "../../lib/fetch";
 import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { socket } from "../../lib/socket";
 
 const formatDate = (dateStr: Date) => {
 	const date = new Date(dateStr);
@@ -63,9 +64,9 @@ function MessageAreaSkeleton() {
 	);
 }
 
-function Messages() {
-	const user: User = useAtomValue(User);
-	const { chatId } = useParams();
+function Messages({ chatId }: { chatId: string | null }) {
+	const user = useAtomValue(User);
+	const [isTyping, setIsTyping] = useState(false);
 	const { ref: loadMoreRef, inView } = useInView();
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
@@ -78,7 +79,7 @@ function Messages() {
 				);
 
 				return {
-					messages,
+					messages: messages as Message[],
 					nextCursor:
 						messages.length === 20 ? pageParam + 20 : undefined,
 				};
@@ -91,6 +92,12 @@ function Messages() {
 		if (inView && hasNextPage && !isFetchingNextPage) {
 			fetchNextPage();
 		}
+
+		socket.on("typing", (chatId, isTyping) => {
+			if (chatId === chatId) {
+				setIsTyping(isTyping);
+			}
+		});
 	}, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
 	if (status === "pending") return <MessageAreaSkeleton />;
@@ -119,10 +126,33 @@ function Messages() {
 		);
 	}
 
-	console.log(messages)
-
 	return (
 		<div className="flex flex-col-reverse w-full">
+			{/* Typing indicator */}
+			{isTyping && (
+				<div className="flex justify-start mt-3">
+					<div className="flex items-center gap-2">
+						<div className="bg-secondary flex justify-center py-2 px-3 rounded-r-md animate-pulse w-[30%] min-w-[100px] h-[36px]">
+							Typing
+							<div className="flex justify-center items-end gap-1">
+								<span
+									className="w-1 h-1 bg-primary/70 rounded-full animate-bounce"
+									style={{ animationDelay: "0s" }}
+								></span>
+								<span
+									className="w-1 h-1 bg-primary/70 rounded-full animate-bounce"
+									style={{ animationDelay: "0.2s" }}
+								></span>
+								<span
+									className="w-1 h-1 bg-primary/70 rounded-full animate-bounce"
+									style={{ animationDelay: "0.4s" }}
+								></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
 			{/* Messages list */}
 			{messages.map((msg, index) => {
 				const nextMsg = messages[index + 1]; // Since the array is reversed, we look at the next message
@@ -181,13 +211,13 @@ function Messages() {
 	);
 }
 
-export function MessageArea() {
+export function MessageArea({ chatId }: { chatId: string | null }) {
 	return (
 		<div
-			className="w-full flex flex-col-reverse px-8 h-[calc(70vh)] overflow-y-scroll pb-4"
+			className="w-full flex flex-col-reverse px-8 h-[calc(100vh-200px)] md:h-[calc(100vh-240px)] overflow-y-scroll pb-4"
 			ref={(ref) => ref && (ref.scrollTop = ref.scrollHeight)}
 		>
-			<Messages />
+			<Messages chatId={chatId} />
 		</div>
 	);
 }

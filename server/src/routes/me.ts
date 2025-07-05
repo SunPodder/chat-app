@@ -5,21 +5,7 @@ import { Media, Users } from "../schema";
 import { eq, getTableColumns } from "drizzle-orm";
 
 export async function get(req: e.Request, res: e.Response) {
-	const user = req["user"];
-	const media = await db
-		.select()
-		.from(Media)
-		.where(eq(Media.user_id, user.id))
-		.then((res) => res[0] as Media);
-
-	if (!media) {
-		res.status(404).send({ error: "Media not found" });
-		return;
-	}
-
-	const userData: ClientUser = { ...user, avatar: media };
-
-	res.status(200).send(userData);
+	res.status(200).send(req.user);
 }
 
 export async function edit(req: e.Request, res: e.Response) {
@@ -40,10 +26,10 @@ export async function edit(req: e.Request, res: e.Response) {
 			const media = await db
 				.insert(Media)
 				.values({
-					user_id: req["user"].id,
-					type: req["file"].mimetype,
+					user_id: req.user.id,
+					type: req.file.mimetype,
 					url:
-						"http://localhost:5000/uploads/" + req["file"].filename,
+						"http://localhost:5000/uploads/" + req.file.filename,
 				})
 				.returning()
 				.then((res) => res[0] as Media);
@@ -57,11 +43,11 @@ export async function edit(req: e.Request, res: e.Response) {
 			await db
 				.update(Users)
 				.set(val)
-				.where(eq(Users.id, req["user"].id))
+				.where(eq(Users.id, req.user.id))
 				.returning({...fields})
-		)[0] as ServerUser;
+		)[0] as User;
 		res.status(200).send(user);
 	} catch (error) {
-		res.status(400).send(error.errors);
+		res.status(400).send({ message: error.message });
 	}
 }

@@ -15,7 +15,7 @@ import { useAtomValue } from "jotai";
 import { GET } from "../lib/fetch";
 import { socket } from "../lib/socket";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const formatDate = (dateStr: Date) => {
 	const date = new Date(dateStr);
@@ -51,13 +51,13 @@ export default function Home() {
 	});
 
 	useEffect(() => {
-		socket.on("sent_message", (msg, user) => {
-			queryClient.setQueryData(["chats"], (data: Array<object>) => {
+		socket.on("sent_message", (msg: Message, user: User) => {
+			queryClient.setQueryData<Chat[]>(["chats"], (data) => {
 				if (!data) return data;
 				const chatIndex = data.findIndex(
 					// we're sending message, so we're the from
 					// chat.to is the user we're sending the message to
-					(chat: object) => chat.to.id === msg.to
+					(chat: Chat) => chat.to.id === msg.to
 				);
 
 				if (chatIndex !== -1) {
@@ -77,13 +77,13 @@ export default function Home() {
 			});
 		});
 
-		socket.on("recieve_message", (msg, user) => {
-			queryClient.setQueryData(["chats"], (data: Array<object>) => {
+		socket.on("recieve_message", (msg: Message, user: User) => {
+			queryClient.setQueryData<Chat[]>(["chats"], (data) => {
 				if (!data) return data;
 				const chatIndex = data.findIndex(
 					// we're recieving message, so we're the to
 					// chat.to is the user who sent the message
-					(chat: object) => chat.to.id === msg.from
+					(chat: Chat) => chat.to.id === msg.from
 				);
 
 				if (chatIndex !== -1) {
@@ -108,8 +108,8 @@ export default function Home() {
 		const q = s.toLowerCase();
 		if (q === "") {
 			// sort based on created_at
-			queryClient.setQueryData(["chats"], (data: Array<object>) => {
-				return [...data].sort((a: object, b: object) => {
+			queryClient.setQueryData<Chat[]>(["chats"], (data) => {
+				return [...data].sort((a: Chat, b: Chat) => {
 					return (
 						new Date(b.last_message.created_at) -
 						new Date(a.last_message.created_at)
@@ -120,8 +120,8 @@ export default function Home() {
 
 		// return all chats
 		// but put those on top that match the query
-		queryClient.setQueryData(["chats"], (data: Chat[]) => {
-			return [...data].sort((a: any, b: any) => {
+		queryClient.setQueryData<Chat[]>(["chats"], (data) => {
+			return [...data].sort((a: web.Chat, b: web.Chat) => {
 				const aName =
 					`${a.to.name.first} ${a.to.name.last}`.toLowerCase();
 				const bName =
@@ -142,7 +142,7 @@ export default function Home() {
 	if (isLoading) return <div>Loading...</div>;
 
 	return (
-		<Card className="w-full h-full flex flex-col">
+		<Card className={`w-full h-full flex flex-col`}>
 			<CardHeader>
 				<CardTitle className="py-2 flex items-center">
 					<span className="flex-1">Chats</span>
@@ -157,7 +157,7 @@ export default function Home() {
 				</div>
 			</CardHeader>
 			<CardContent>
-				<div type="none">
+				<div>
 					{chats.map((chat, i) => {
 						return (
 							<Link
@@ -168,7 +168,7 @@ export default function Home() {
 								<div className="flex items-center w-full h-full gap-2">
 									<Avatar className="w-8 h-8">
 										<AvatarImage
-											src={chat.to.avatar}
+											src={chat.to.avatar?.url}
 											alt={chat.to.name.first}
 										/>
 										<AvatarFallback>
@@ -184,7 +184,7 @@ export default function Home() {
 										<span className="flex-1">
 											{chat.last_message.from ===
 												user?.id && "You: "}
-											{chat.last_message.text}
+											{chat.last_message.text || "Image"}
 										</span>
 										{formatDate(
 											chat.last_message.created_at

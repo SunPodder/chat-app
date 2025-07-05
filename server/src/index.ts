@@ -35,23 +35,34 @@ const io = new Server(server, {
 	},
 });
 io.on("connection", async (socket) => {
-	const session = cookie.parse(
-		socket.request.headers.cookie as string
-	)["session"];
+	const session = cookie.parse(socket.request.headers.cookie as string)[
+		"session"
+	];
 	if (!session) {
 		socket.disconnect();
 		return;
 	}
-	console.log("SOCKET: " + socket.id + " connected");
 
 	const user_id = await redis.get(`session:${session}`);
+	if (!user_id) {
+		socket.disconnect();
+		return;
+	}
+
+	// cache the socket id in redis
+	// this will be used to send messages to the user
 	await redis.set(`socket:${user_id}`, socket.id);
 
-	const sokcet_user = (
+	const socket_user = (
 		await db.select().from(Users).where(eq(Users.id, user_id))
-	)[0];
+	)[0] as User;
 
-	socket.on("send_message", async (data, chat_user) => {
+	await db
+		.update(Users)
+		.set({ last_online: new Date() })
+		.where(eq(Users.id, user_id));
+
+	socket.on("send_message", async (data, send_back_user) => {
 		const msg = (
 			await db
 				.insert(Messages)
@@ -62,18 +73,28 @@ io.on("connection", async (socket) => {
 				})
 				.returning()
 		)[0];
+		let chat_user: User | undefined = undefined;
 
-		if (chat_user) {
+		if (send_back_user) {
 			chat_user = (
 				await db.select().from(Users).where(eq(Users.id, data.to))
-			)[0];
+			)[0] as User;
 		}
 
 		const toSocket = await redis.get(`socket:${data.to}`);
+
 		if (toSocket) {
-			socket.to(toSocket).emit("recieve_message", msg, sokcet_user);
+			socket.to(toSocket).emit("recieve_message", msg, socket_user);
 		}
 		socket.emit("sent_message", msg, chat_user);
+	});
+
+	socket.on("typing", async ({ chatId, isTyping }) => {
+		const toSocket = await redis.get(`socket:${chatId}`);
+
+		if (toSocket) {
+			socket.to(toSocket).emit("typing", socket_user.id, isTyping);
+		}
 	});
 
 	socket.on("disconnect", async () => {

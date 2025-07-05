@@ -12,10 +12,10 @@ async function seed() {
 			name: { first: "Alice", last: "Johnson" },
 			username: "alice",
 			email: "alice@example.com",
-			password: "password123", // In production, this should be hashed
+			password: "password123",
 		})
 		.returning()
-		.then((res) => res[0] as ServerUser);
+		.then((res) => res[0] as User);
 
 	const bob = await db
 		.insert(Users)
@@ -26,7 +26,7 @@ async function seed() {
 			password: "password123",
 		})
 		.returning()
-		.then((res) => res[0] as ServerUser);
+		.then((res) => res[0] as User);
 
 	await db
 		.insert(Users)
@@ -37,9 +37,20 @@ async function seed() {
 			password: "password123",
 		})
 		.returning()
-		.then((res) => res[0] as ServerUser);
+		.then((res) => res[0] as User);
 
-	const media1 = await db
+	const msgs: ServerMessage[] = Array.from({ length: 50 }, (_, i) => ({
+    id: randomUUID(),
+		from: i % 2 === 0 ? alice.id : bob.id,
+		to: i % 2 === 0 ? bob.id : alice.id,
+		text: `Hello, this is message number ${i + 1}`,
+		created_at: new Date(Date.now() + i * 1000 * 60),
+	}));
+
+	// Create some sample messages
+	const messages = await db.insert(Messages).values(msgs).returning();
+
+		const media1 = await db
 		.insert(Media)
 		.values({
 			user_id: alice.id,
@@ -61,27 +72,29 @@ async function seed() {
 		.returning()
 		.then((res) => res[0] as Media);
 
-	const media3 = await db
+	await db
 		.insert(Media)
 		.values({
 			user_id: alice.id,
 			type: "image/png",
 			url: `https://images.unsplash.com/photo-1586810724476-c294fb7ac01b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8ZnJlZSUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D`,
 			created_at: new Date(),
+			message_id: messages.at(-1).id,
 		})
 		.returning()
-		.then((res) => res[0] as Media);
+		.then((res) => res[0]);
 
-	const media4 = await db
+	await db
 		.insert(Media)
 		.values({
 			user_id: alice.id,
 			type: "image/png",
 			url: "https://images.unsplash.com/photo-1546464677-c25cd52c470b?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 			created_at: new Date(),
+			message_id: messages.at(-1).id,
 		})
 		.returning()
-		.then((res) => res[0] as Media);
+		.then((res) => res[0]);
 
 	// update avatars
 	await db
@@ -89,27 +102,15 @@ async function seed() {
 		.set({ avatar: media1.id })
 		.where(eq(Users.id, alice.id))
 		.returning()
-		.then((res) => res[0] as ServerUser);
+		.then((res) => res[0]);
 
 	await db
 		.update(Users)
 		.set({ avatar: media2.id })
 		.where(eq(Users.id, bob.id))
 		.returning()
-		.then((res) => res[0] as ServerUser);
+		.then((res) => res[0]);
 
-	const msgs: ServerMessage[] = Array.from({ length: 50 }, (_, i) => ({
-    id: randomUUID(),
-		from: i % 2 === 0 ? alice.id : bob.id,
-		to: i % 2 === 0 ? bob.id : alice.id,
-		text: `Hello, this is message number ${i + 1}`,
-		created_at: new Date(Date.now() + i * 1000 * 60),
-	}));
-
-	msgs[49].media = [media3.id, media4.id];
-
-	// Create some sample messages
-	await db.insert(Messages).values(msgs);
 
 	console.log("✅ Seed data inserted successfully!");
 	process.exit(0);
