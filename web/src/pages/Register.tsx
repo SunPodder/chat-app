@@ -1,5 +1,5 @@
-import { zRegisterUser } from "../../../common/zod_schema";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterUserSchema, vRegisterUser } from "../../../common/zod_schema";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
 import {
 	Form,
@@ -11,7 +11,6 @@ import {
 } from "../components/ui/form";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { z } from "zod";
 import {
 	Card,
 	CardContent,
@@ -26,8 +25,8 @@ import { User } from "../lib/store";
 import { useSetAtom } from "jotai";
 
 export default function Register() {
-	const form = useForm<z.infer<typeof zRegisterUser>>({
-		resolver: zodResolver(zRegisterUser),
+	const form = useForm<RegisterUserSchema>({
+		resolver: valibotResolver(vRegisterUser),
 		defaultValues: {
 			name: {
 				first: "",
@@ -42,7 +41,7 @@ export default function Register() {
 
 	const setUser: any = useSetAtom(User as any);
 
-	async function onSubmit(data: z.infer<typeof zRegisterUser>) {
+	async function onSubmit(data: RegisterUserSchema) {
 		const user = await POST("/register", data);
 		setUser(user);
 		console.log(user);

@@ -9,7 +9,6 @@ import {
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { GET } from "../../lib/fetch";
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { socket } from "../../lib/socket";
 

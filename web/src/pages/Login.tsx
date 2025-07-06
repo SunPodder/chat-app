@@ -1,5 +1,5 @@
-import { zLoginUser } from "../../../common/zod_schema";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginUserSchema, vLoginUser } from "../../../common/zod_schema";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useForm } from "react-hook-form";
 import {
 	Form,
@@ -11,7 +11,6 @@ import {
 } from "../components/ui/form";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { z } from "zod";
 import {
 	Card,
 	CardContent,
@@ -26,8 +25,8 @@ import { useSetAtom } from "jotai";
 import { User } from "../lib/store";
 
 export default function Login() {
-	const form = useForm<z.infer<typeof zLoginUser>>({
-		resolver: zodResolver(zLoginUser),
+	const form = useForm<LoginUserSchema>({
+		resolver: valibotResolver(vLoginUser),
 		defaultValues: {
 			email: "",
 			password: "",
@@ -36,7 +35,7 @@ export default function Login() {
 
 	const setUser: any = useSetAtom(User as any);
 
-	async function onSubmit(data: z.infer<typeof zLoginUser>) {
+	async function onSubmit(data: LoginUserSchema) {
 		const user = await POST("/login", data);
 		setUser(user);
 	}

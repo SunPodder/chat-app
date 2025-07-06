@@ -11,9 +11,8 @@ import { Input } from "../components/ui/input";
 import { useAtom } from "jotai";
 import { User } from "../lib/store";
 import { useForm } from "react-hook-form";
-import { zProfile } from "../../../common/zod_schema";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { ProfileSchema, vProfile } from "../../../common/zod_schema";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import {
 	Form,
 	FormControl,
@@ -40,7 +39,10 @@ const ProfileImage = ({ user, form }) => {
 						<FormLabel>
 							<Avatar className="flex relative cursor-pointer">
 								<AvatarImage
-									src={makeObjectURL(value) || user?.avatar?.url}
+									src={
+										makeObjectURL(value) ||
+										user?.avatar?.url
+									}
 									alt={user?.name.first}
 									className="w-40 h-40 rounded-full"
 								/>
@@ -76,8 +78,8 @@ const ProfileImage = ({ user, form }) => {
 export default function Profile() {
 	const [user, setUser]: [any, any] = useAtom(User);
 
-	const form = useForm<z.infer<typeof zProfile>>({
-		resolver: zodResolver(zProfile),
+	const form = useForm<ProfileSchema>({
+		resolver: valibotResolver(vProfile),
 		defaultValues: {
 			email: user?.email,
 			username: user?.username,

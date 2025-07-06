@@ -2,13 +2,14 @@ import { Image, Send } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { socket } from "../../lib/socket";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
 
 export function ChatInput({chat, chatId}: { chat: Chat, chatId: string | null }) {
 	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [message, setMessage] = useState<string>("");
 	const [images, setImages] = useState<File[]>([]);
 	const [imagePreview, setImagePreview] = useState<string[]>([]);
+	console.log(images);
+	
 
 	useEffect(() => {
 		return () => {
