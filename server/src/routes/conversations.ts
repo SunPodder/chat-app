@@ -70,21 +70,14 @@ export async function list(req: e.Request, res: e.Response) {
 					? (record["to_id"] as string)
 					: (record["from_id"] as string);
 
-			const fields = getTableColumns(Users);
-			// const to = (await db
-			// 	.select({
-			// 		...fields,
-			// 		avatar: Media,
-			// 	})
-			// 	.from(Users)
-			// 	.where(eq(Users.id, buddy_id))
-			// 	.limit(1)
-			// 	.leftJoin(Media, eq(Users.id, Media.user_id)));
-
 			const to = (await db.query.Users.findFirst({
 				where: eq(Users.id, buddy_id),
 				with: {
 					avatar: true,
+					email: false,
+					password: false,
+					created_at: false,
+					updated_at: false,
 				},
 			})) as User;
 

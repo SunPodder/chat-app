@@ -1,31 +1,32 @@
 import type e from "express";
-import { zLoginUser } from "../../../common/zod_schema";
+import * as v from "valibot";
+import { vLoginUser } from "../../../common/zod_schema";
 import { db, redis } from "../db";
 import { Sessions, Users } from "../schema";
-import { and, eq, getTableColumns } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export default async function (req: e.Request, res: e.Response) {
 	try {
-		zLoginUser.parse(req.body);
+		v.parse(vLoginUser, req.body);
 
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { password, ...fields } = getTableColumns(Users);
+		const user = await db.query.Users.findFirst({
+			where: and(
+				eq(Users.email, req.body.email),
+				eq(Users.password, req.body.password)
+			),
+			with: {
+				avatar: true,
+			},
+			columns: {
+				password: false,
+			},
+		}) as User | undefined;
 
-		const user = await db
-			.select({ ...fields })
-			.from(Users)
-			.where(
-				and(
-					eq(Users.email, req.body.email),
-					eq(Users.password, req.body.password)
-				)
-			) as ServerUser[];
-
-		if (user.length === 0) {
+		if (!user) {
 			throw new Error("Invalid email or password");
 		}
 
-		const session: ServerSession = (
+		const session: Session = (
 			await db
 				.insert(Sessions)
 				.values({

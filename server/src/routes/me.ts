@@ -1,5 +1,6 @@
 import type e from "express";
-import { zProfile } from "../../../common/zod_schema";
+import { vProfile } from "../../../common/zod_schema";
+import * as v from 'valibot';
 import { db } from "../db";
 import { Media, Users } from "../schema";
 import { eq, getTableColumns } from "drizzle-orm";
@@ -11,7 +12,7 @@ export async function get(req: e.Request, res: e.Response) {
 export async function edit(req: e.Request, res: e.Response) {
 	try {
 		req.body.name = JSON.parse(req.body.name);
-		zProfile.parse(req.body);
+		v.parse(vProfile, req.body);
 		const val = {
 			name: req.body.name,
 			username: req.body.username,

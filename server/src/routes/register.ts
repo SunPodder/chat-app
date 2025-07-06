@@ -1,21 +1,22 @@
 import { getTableColumns } from "drizzle-orm";
-import { zRegisterUser } from "../../../common/zod_schema";
+import { vRegisterUser } from "../../../common/zod_schema";
 import { db, redis } from "../db";
 import { Sessions, Users } from "../schema";
+import * as v from "valibot";
 import type e from "express";
 
 export default async function (req: e.Request, res: e.Response) {
 	try {
-		zRegisterUser.parse(req.body);
+		v.parse(vRegisterUser, req.body);
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { password, ...fields } = getTableColumns(Users);
-		const user: ServerUser = (
+		const user = (
 			await db
 				.insert(Users)
 				.values(req.body)
 				.returning({ ...fields })
-		)[0];
+		)[0] as User;
 		const session: string = (
 			await db
 				.insert(Sessions)
