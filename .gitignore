@@ -156,7 +156,7 @@ dist
 
 .tern-port
 
-data
+postgres_data
 
 # Stores VSCode versions used for testing VSCode extensions
 
