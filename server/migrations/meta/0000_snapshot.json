@@ -1,5 +1,5 @@
 {
-  "id": "b2e054d2-5939-4859-a21f-afaca890bc7e",
+  "id": "cd1f2ba6-97e0-46ce-8b0e-716235448ded",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -45,6 +45,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -55,6 +61,19 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "media_message_id_messages_id_fk": {
+          "name": "media_message_id_messages_id_fk",
+          "tableFrom": "media",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "message_id"
           ],
           "columnsTo": [
             "id"
@@ -101,13 +120,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "uuid[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::uuid[]"
         }
       },
       "indexes": {},

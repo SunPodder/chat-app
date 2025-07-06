@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS "media" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"url" text NOT NULL,
 	"type" text NOT NULL,
-	"thumbnail" text
+	"thumbnail" text,
+	"message_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "messages" (
@@ -12,8 +13,7 @@ CREATE TABLE IF NOT EXISTS "messages" (
 	"text" text NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"from_id" uuid NOT NULL,
-	"to_id" uuid NOT NULL,
-	"media_id" uuid[] DEFAULT '{}'::uuid[]
+	"to_id" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "sessions" (
@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS "users" (
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "media" ADD CONSTRAINT "media_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "media" ADD CONSTRAINT "media_message_id_messages_id_fk" FOREIGN KEY ("message_id") REFERENCES "public"."messages"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
